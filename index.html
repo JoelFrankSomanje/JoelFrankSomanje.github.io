@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elliot — Computer Networking Engineer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#0A0E13;
+    --panel:#111820;
+    --panel-line:#1E2A35;
+    --ink:#E7EDF2;
+    --muted:#7C8B99;
+    --muted-dim:#4F5C68;
+    --amber:#F2B84B;   /* runway edge lighting */
+    --blue:#4FA8E0;    /* taxiway / routing */
+    --green:#5FD48A;   /* centerline / status-ok */
+    --red:#E2645A;     /* fault / alert */
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    color-scheme: dark;
+  }
+
+  html[data-theme="light"]{
+    --bg:#EEF1F4;
+    --panel:#FFFFFF;
+    --panel-line:#D6DEE5;
+    --ink:#10161C;
+    --muted:#526270;
+    --muted-dim:#8B98A4;
+    --amber:#B9820E;
+    --blue:#1E6FB5;
+    --green:#1E8F5A;
+    --red:#C23B31;
+    color-scheme: light;
+  }
+
+  html{ transition: background-color .25s ease; }
+  body{ transition: background-color .25s ease, color .25s ease; }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  ::selection{ background:var(--amber); color:#0A0E13; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  /* ---------- Layout scaffolding ---------- */
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 32px; }
+  section{ position:relative; padding:120px 0; }
+  section + section{ border-top:1px solid var(--panel-line); }
+
+  .coord{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--muted-dim);
+    text-transform:uppercase;
+  }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px; height:1px;
+    background:var(--amber);
+    display:inline-block;
+  }
+
+  h1,h2,h3{ font-family:var(--mono); font-weight:600; letter-spacing:-0.01em; }
+
+  /* ---------- Corner bracket decoration ---------- */
+  .bracket{ position:relative; }
+  .bracket::before, .bracket::after{
+    content:"";
+    position:absolute;
+    width:14px; height:14px;
+    border:1px solid var(--panel-line);
+  }
+  .bracket::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .bracket::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+
+  /* ---------- Nav ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    background:rgba(10,14,19,0.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--panel-line);
+  }
+  nav.wrap{
+    height:64px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{
+    font-family:var(--mono); font-weight:700; font-size:14px;
+    letter-spacing:0.04em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo .dot{ width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+  nav ul{ list-style:none; display:flex; gap:32px; }
+  nav a{ font-family:var(--mono); font-size:12px; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; transition:color .2s; }
+  nav a:hover{ color:var(--ink); }
+  @media (max-width:720px){ nav ul{ display:none; } }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding-top:180px;
+    min-height:92vh;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:64px;
+    align-items:center;
+  }
+  @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  .hero h1{
+    font-size:clamp(32px, 5vw, 52px);
+    line-height:1.15;
+    color:var(--ink);
+    margin-bottom:20px;
+  }
+  .hero h1 .accent{ color:var(--amber); }
+  .hero p.lede{
+    font-size:17px;
+    color:var(--muted);
+    max-width:52ch;
+    margin-bottom:32px;
+  }
+  .status-row{
+    display:flex; gap:28px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+  }
+  .status-row div{ display:flex; align-items:center; gap:8px; }
+  .status-row .val{ color:var(--ink); }
+
+  .cta-row{ display:flex; gap:16px; margin-top:36px; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.06em;
+    padding:13px 22px;
+    border:1px solid var(--amber);
+    color:var(--amber);
+    text-transform:uppercase;
+    transition:all .2s;
+  }
+  .btn:hover{ background:var(--amber); color:#0A0E13; }
+  .btn.ghost{ border-color:var(--panel-line); color:var(--muted); }
+  .btn.ghost:hover{ border-color:var(--muted); color:var(--ink); background:transparent; }
+
+  /* ---------- Topology diagram (signature element) ---------- */
+  .topo-frame{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    aspect-ratio:1/1;
+    position:relative;
+  }
+  .topo-frame svg{ width:100%; height:100%; display:block; }
+  .topo-label{
+    position:absolute; top:12px; left:14px;
+    font-family:var(--mono); font-size:10px; color:var(--muted-dim);
+    letter-spacing:0.1em; text-transform:uppercase;
+  }
+
+  .node-core{ fill:#1A2530; stroke:var(--amber); stroke-width:1.4; }
+  .node-dist{ fill:#141C25; stroke:var(--blue); stroke-width:1.2; }
+  .node-label{ font-family:var(--mono); font-size:8.5px; fill:var(--muted); letter-spacing:0.03em; }
+  .link{ stroke:var(--panel-line); stroke-width:1.2; fill:none; }
+  .pulse{
+    stroke:var(--amber);
+    stroke-width:1.6;
+    fill:none;
+    stroke-dasharray:6 220;
+    animation:flow 3.6s linear infinite;
+    opacity:0.9;
+  }
+  .pulse.blue{ stroke:var(--blue); animation-duration:4.4s; animation-delay:.6s; }
+  .pulse.green{ stroke:var(--green); animation-duration:5.2s; animation-delay:1.4s; }
+  @keyframes flow{ to{ stroke-dashoffset:-226; } }
+
+  .radar{
+    transform-origin:center;
+    animation:sweep 6s linear infinite;
+  }
+  @keyframes sweep{ to{ transform:rotate(360deg); } }
+
+  /* ---------- Section headers ---------- */
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head h2{ font-size:clamp(24px,3.4vw,32px); color:var(--ink); }
+  .section-head p{ color:var(--muted); margin-top:14px; font-size:15px; }
+
+  /* ---------- About ---------- */
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:48px; }
+  @media (max-width:800px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-grid p{ color:var(--muted); font-size:15.5px; margin-bottom:16px; }
+  .about-grid strong{ color:var(--ink); font-weight:600; }
+  .facts{ font-family:var(--mono); font-size:13px; }
+  .facts dt{ color:var(--muted-dim); text-transform:uppercase; letter-spacing:0.08em; font-size:11px; margin-top:18px; }
+  .facts dd{ color:var(--ink); margin-top:4px; }
+  .facts dt:first-child{ margin-top:0; }
+
+  /* ---------- Project cards ---------- */
+  .project{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    margin-bottom:28px;
+  }
+  .project-head{
+    padding:32px 32px 0 32px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap;
+  }
+  .project-head h3{ font-size:22px; color:var(--ink); }
+  .project-tag{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.1em;
+    color:var(--bg); background:var(--amber);
+    padding:4px 9px; text-transform:uppercase; white-space:nowrap;
+  }
+  .project-tag.wip{ background:transparent; color:var(--muted); border:1px solid var(--panel-line); }
+  .project-body{ padding:20px 32px 32px 32px; }
+  .project-body > p{ color:var(--muted); font-size:15px; max-width:70ch; margin-bottom:24px; }
+
+  .spec-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:1px;
+    background:var(--panel-line);
+    border:1px solid var(--panel-line);
+    margin-bottom:24px;
+  }
+  .spec{ background:var(--panel); padding:16px 18px; }
+  .spec .k{ font-family:var(--mono); font-size:10px; color:var(--amber); letter-spacing:0.09em; text-transform:uppercase; margin-bottom:6px; }
+  .spec .v{ font-size:13.5px; color:var(--ink); }
+
+  .taglist{ display:flex; flex-wrap:wrap; gap:8px; }
+  .taglist span{
+    font-family:var(--mono); font-size:11px; color:var(--blue);
+    border:1px solid rgba(79,168,224,0.35);
+    padding:5px 10px;
+  }
+
+  /* ---------- Skills ---------- */
+  .skills-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1px; background:var(--panel-line); border:1px solid var(--panel-line); }
+  .skill-col{ background:var(--bg); padding:26px 24px; }
+  .skill-col h4{ font-family:var(--mono); font-size:12px; color:var(--amber); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; }
+  .skill-col ul{ list-style:none; }
+  .skill-col li{ font-size:14px; color:var(--muted); padding:6px 0; border-top:1px solid var(--panel-line); }
+  .skill-col li:first-child{ border-top:none; }
+  .skill-col li::before{ content:"— "; color:var(--muted-dim); }
+
+  /* ---------- Contact ---------- */
+  .contact{ display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:32px; }
+  .contact h2{ font-size:clamp(26px,4vw,38px); max-width:14ch; }
+  .contact-links{ display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+  .contact-links a{ font-family:var(--mono); font-size:14px; color:var(--muted); border-bottom:1px solid transparent; transition:.2s; }
+  .contact-links a:hover{ color:var(--amber); border-color:var(--amber); }
+  @media (max-width:700px){ .contact{ align-items:flex-start; } .contact-links{ align-items:flex-start; } }
+
+  footer{ padding:32px 0; border-top:1px solid var(--panel-line); }
+  footer .wrap{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--muted-dim); flex-wrap:wrap; gap:8px; }
+
+  /* ---------- Theme toggle ---------- */
+  .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:transparent;
+    border:1px solid var(--panel-line);
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:8px 12px;
+    cursor:pointer;
+    transition:all .2s;
+  }
+  .theme-toggle:hover{ color:var(--ink); border-color:var(--muted); }
+  .theme-toggle svg{ width:13px; height:13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <div class="logo"><span class="dot"></span>JOEL SOMANJE // NET-ENG</div>
+    <ul>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+      </svg>
+      <span id="themeText">Dark</span>
+    </button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <p class="coord" style="margin-bottom:20px;">MW · 3RD YEAR · COMPUTER NETWORKING ENGINEERING</p>
+        <h1>I design networks that keep <span class="accent">running when things fail.</span></h1>
+        <p class="lede">Computer Networking Engineering student building enterprise-grade network infrastructure and the tools that audit it — from VLAN-segmented, OSPF-routed campus designs to AI-assisted config review.</p>
+
+        <div class="status-row">
+          <div>VLAN &amp; VLSM <span class="val">✓ Implemented</span></div>
+          <div>OSPF / HSRP <span class="val">✓ Configured</span></div>
+          <div>Failure Testing <span class="val">✓ In progress</span></div>
+        </div>
+
+        <div class="cta-row">
+          <a href="#work" class="btn">View the work</a>
+          <a href="#contact" class="btn ghost">Get in touch</a>
+        </div>
+      </div>
+
+      <div class="topo-frame bracket">
+        <span class="topo-label">TOPOLOGY // AIRPORT-CORE</span>
+        <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+          <!-- radar sweep -->
+          <g class="radar" opacity="0.12">
+            <line x1="180" y1="180" x2="180" y2="30" stroke="var(--amber)" stroke-width="60" stroke-linecap="round" style="mix-blend-mode:screen; opacity:0.15;"/>
+          </g>
+
+          <!-- links: core to distribution -->
+          <path class="link" d="M180,180 L90,90"/>
+          <path class="link" d="M180,180 L270,90"/>
+          <path class="link" d="M180,180 L90,270"/>
+          <path class="link" d="M180,180 L270,270"/>
+          <path class="link" d="M180,180 L180,60"/>
+          <!-- HSRP pair link -->
+          <path class="link" d="M160,180 L200,180" stroke-dasharray="2 3"/>
+
+          <!-- animated pulses along links -->
+          <path class="pulse" d="M180,180 L90,90"/>
+          <path class="pulse blue" d="M180,180 L270,270"/>
+          <path class="pulse green" d="M180,180 L90,270"/>
+
+          <!-- distribution nodes -->
+          <circle class="node-dist" cx="90" cy="90" r="15"/>
+          <text class="node-label" x="90" y="72" text-anchor="middle">TERM-A</text>
+
+          <circle class="node-dist" cx="270" cy="90" r="15"/>
+          <text class="node-label" x="270" y="72" text-anchor="middle">TERM-B</text>
+
+          <circle class="node-dist" cx="90" cy="270" r="15"/>
+          <text class="node-label" x="90" y="292" text-anchor="middle">CARGO</text>
+
+          <circle class="node-dist" cx="270" cy="270" r="15"/>
+          <text class="node-label" x="270" y="292" text-anchor="middle">ADMIN</text>
+
+          <circle class="node-dist" cx="180" cy="60" r="13"/>
+          <text class="node-label" x="180" y="42" text-anchor="middle">TOWER</text>
+
+          <!-- core pair (HSRP) -->
+          <circle class="node-core" cx="164" cy="180" r="18"/>
+          <circle class="node-core" cx="196" cy="180" r="18"/>
+          <text class="node-label" x="180" y="215" text-anchor="middle" fill="var(--amber)">CORE (HSRP)</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="wrap">
+    <div class="about-grid">
+      <div>
+        <p class="eyebrow">About</p>
+        <p>I'm a third-year <strong>Computer Networking Engineering</strong> student, and my focus sits at the point where traditional network engineering meets modern tooling.</p>
+        <p>Most of my coursework — routing and switching, cryptography, systems administration, network programming — feeds into two live projects I'm building outside of class: a full enterprise network design for a simulated international airport, and an AI-assisted tool for auditing Cisco configurations.</p>
+        <p>My interest is in the discipline of enterprise networking: not just getting devices to talk, but designing for scale, redundancy, and failure — the way a network actually has to behave in production.</p>
+      </div>
+      <dl class="facts">
+        <dt>Program</dt>
+        <dd>Computer Networking Engineering, 3rd year</dd>
+        <dt>Environment</dt>
+        <dd>Ubuntu Linux, Cisco Packet Tracer, VS Code, Python</dd>
+        <dt>Core coursework</dt>
+        <dd>Network Analysis, Network Programming, Linux Systems Administration, Cryptography, Data Structures &amp; Algorithms, Digital Electronics</dd>
+        <dt>Currently building</dt>
+        <dd>Enterprise Airport Network · AI Config Auditor</dd>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ================= WORK ================= -->
+  <section id="work" class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Selected Work</p>
+      <h2>Two projects, one standard: design for scale, design for failure.</h2>
+      <p>Each piece follows the same discipline — segment first, route deliberately, secure by default, and prove it works when something breaks.</p>
+    </div>
+
+    <!-- Project 1: Airport Network -->
+    <article class="project bracket">
+      <div class="project-head">
+        <h3>Enterprise Airport Network</h3>
+        <span class="project-tag">Flagship · In Progress</span>
+      </div>
+      <div class="project-body">
+        <p>A full enterprise network built in Cisco Packet Tracer for a simulated large international airport, spanning multiple buildings and departments — terminals, cargo, administration, and control tower. The goal isn't device connectivity; it's designing the network the way an enterprise engineer would: scalable, redundant, segmented, secure, and documented.</p>
+        <p style="margin-top:-14px;"><a href="https://github.com/JoelFrankSomanje/enterprise-airport-project" target="_blank" rel="noopener" style="font-family:var(--mono); font-size:12.5px; color:var(--blue); border-bottom:1px solid rgba(79,168,224,0.35);">→ Follow progress on GitHub</a></p>
+
+        <div class="spec-grid">
+          <div class="spec"><div class="k">Segmentation</div><div class="v">VLANs per building/department</div></div>
+          <div class="spec"><div class="k">Addressing</div><div class="v">VLSM-based IP allocation</div></div>
+          <div class="spec"><div class="k">Routing</div><div class="v">Inter-VLAN routing · OSPF</div></div>
+          <div class="spec"><div class="k">Redundancy</div><div class="v">HSRP gateway failover</div></div>
+          <div class="spec"><div class="k">Security</div><div class="v">ACLs</div></div>
+          <div class="spec"><div class="k">Services</div><div class="v">DHCP · DNS</div></div>
+          <div class="spec"><div class="k">Validation</div><div class="v">Simulated link/device failure testing</div></div>
+          <div class="spec"><div class="k">Deliverable</div><div class="v">Full design documentation</div></div>
+        </div>
+
+        <div class="taglist">
+          <span>Cisco Packet Tracer</span>
+          <span>VLAN / VLSM</span>
+          <span>OSPF</span>
+          <span>HSRP</span>
+          <span>ACLs</span>
+          <span>DHCP / DNS</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Project 2: Config Auditor -->
+    <article class="project bracket">
+      <div class="project-head">
+        <h3>AI-Powered Cisco Config Auditor</h3>
+        <span class="project-tag wip">Early Stage</span>
+      </div>
+      <div class="project-body">
+        <p>A tool that reviews Cisco device configurations using a locally-hosted AI model rather than a paid API — built to keep the project accessible and self-hosted rather than dependent on ongoing API costs.</p>
+
+        <div class="spec-grid">
+          <div class="spec"><div class="k">Language</div><div class="v">Python</div></div>
+          <div class="spec"><div class="k">Model</div><div class="v">Ollama (local, free)</div></div>
+          <div class="spec"><div class="k">Environment</div><div class="v">Ubuntu · VS Code</div></div>
+          <div class="spec"><div class="k">Status</div><div class="v">Early development</div></div>
+        </div>
+
+        <div class="taglist">
+          <span>Python</span>
+          <span>Ollama</span>
+          <span>Cisco IOS</span>
+          <span>Linux</span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= SKILLS ================= -->
+  <section id="skills" class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Skills</p>
+      <h2>What I bring to the network.</h2>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-col">
+        <h4>Routing &amp; Switching</h4>
+        <ul>
+          <li>VLAN design &amp; segmentation</li>
+          <li>Inter-VLAN routing</li>
+          <li>OSPF</li>
+          <li>VLSM subnetting</li>
+        </ul>
+      </div>
+      <div class="skill-col">
+        <h4>Redundancy &amp; Security</h4>
+        <ul>
+          <li>HSRP gateway redundancy</li>
+          <li>Access Control Lists</li>
+          <li>Failure/failover testing</li>
+        </ul>
+      </div>
+      <div class="skill-col">
+        <h4>Services &amp; Infrastructure</h4>
+        <ul>
+          <li>DHCP</li>
+          <li>DNS</li>
+          <li>Network documentation</li>
+        </ul>
+      </div>
+      <div class="skill-col">
+        <h4>Systems &amp; Tooling</h4>
+        <ul>
+          <li>Linux administration (Ubuntu)</li>
+          <li>Python scripting</li>
+          <li>Local AI tooling (Ollama)</li>
+          <li>Cisco Packet Tracer</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact" class="wrap">
+    <div class="contact">
+      <h2>Let's talk about your network.</h2>
+      <div class="contact-links">
+        <a href="mailto:somanjejoe80@gmail.com">somanjejoe80@gmail.com</a>
+        <a href="https://github.com/JoelFrankSomanje/enterprise-airport-project" target="_blank" rel="noopener">github.com/JoelFrankSomanje</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>JOEL SOMANJE · COMPUTER NETWORKING ENGINEERING · MALAWI</span>
+    <span>BUILT 2026</span>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    var text = document.getElementById('themeText');
+
+    var saved = localStorage.getItem('portfolio-theme');
+    if(saved === 'light'){
+      root.setAttribute('data-theme','light');
+      text.textContent = 'Light';
+    }
+
+    toggle.addEventListener('click', function(){
+      var isLight = root.getAttribute('data-theme') === 'light';
+      if(isLight){
+        root.removeAttribute('data-theme');
+        text.textContent = 'Dark';
+        localStorage.setItem('portfolio-theme','dark');
+      } else {
+        root.setAttribute('data-theme','light');
+        text.textContent = 'Light';
+        localStorage.setItem('portfolio-theme','light');
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

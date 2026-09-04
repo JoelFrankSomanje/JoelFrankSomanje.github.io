@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Downloading — Joel Somanje CV</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  body{
+    margin:0; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background:#070B10; color:#93A3B3;
+    font-family:'Inter', sans-serif; font-size:15px;
+  }
+  a{ color:#1D9E75; }
+</style>
+</head>
+<body>
+  <p id="msg">Your download should begin automatically…</p>
+  <script>
+    window.addEventListener('load', function(){
+      var link = document.createElement('a');
+      link.href = 'assets/Joel_Somanje_CV.pdf';
+      link.download = 'Joel_Somanje_CV.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.getElementById('msg').innerHTML =
+        'Your download should have started. If nothing happened, <a href="assets/Joel_Somanje_CV.pdf">click here</a>.';
+    });
+  </script>
+</body>
+</html>
